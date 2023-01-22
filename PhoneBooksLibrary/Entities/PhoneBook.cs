@@ -8,6 +8,7 @@ using PhoneBooksLibrary.Entities.Enums;
 
 namespace PhoneBooksLibrary.Entities
 {
+    [Serializable]
     public class PhoneBook
     {
         public string FirstName { get; set; }
@@ -26,6 +27,10 @@ namespace PhoneBooksLibrary.Entities
             Number = number;
         }
 
+        public PhoneBook()
+        {
+
+        }
 
     }
 }
