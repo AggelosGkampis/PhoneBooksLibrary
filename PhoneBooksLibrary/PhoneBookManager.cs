@@ -11,8 +11,15 @@ namespace PhoneBooksLibrary
 {
     public class PhoneBookManager
     {
+        private readonly object _lock = new object();
 
-        public Dictionary<string, PhoneBook> _entries;
+        private Dictionary<string, PhoneBook> _entries;
+
+        public Dictionary<string, PhoneBook> Entries
+        {
+            get { return _entries; }
+            private set { _entries = value; }
+        }
         public PhoneBookManager()
         {
             _entries = new Dictionary<string, PhoneBook>();
@@ -20,82 +27,130 @@ namespace PhoneBooksLibrary
 
         public List<PhoneBook> GetAllEntries()
         {
-            return _entries.Values.ToList();
+            try
+            {
+                if (_entries == null || _entries.Count == 0)
+                {
+                    return new List<PhoneBook>();
+                    //or return "No phonebook entries found.";
+                }
+                return _entries.Values.ToList();
+            }
+            catch (Exception ex)
+            {
+                //log the exception
+                return new List<PhoneBook>();
+            }
         }
+
 
         public PhoneBook GetEntryNumber(string phoneN)
         {
-
-            return _entries[phoneN];
+            lock (_lock)
+            {
+                return _entries[phoneN];
+            }
         }
-        public void AddEntry(string number, PhoneBook phonebook)
+        public bool AddEntry(PhoneBook phonebook)
         {
-            if (!_entries.ContainsKey(number))
+            lock (_lock)
             {
-                _entries.Add(number, phonebook);
-
-            }
-            else
-            {
-                Console.WriteLine("The number already exists in the phonebook");
+                if (!_entries.ContainsKey(phonebook.Number))
+                {
+                    _entries.Add(phonebook.Number, phonebook);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
-        public void DeleteEntry(string number)
+
+        public bool DeletePhonebook(string number)
         {
-            if (_entries.ContainsKey(number))
+            lock (_lock)
             {
-                _entries.Remove(number);
-            }
-            else
-            {
-                Console.WriteLine("The number does not exist in the phonebook");
+                if (_entries.ContainsKey(number))
+                {
+                    _entries.Remove(number);
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine("The number does not exist in the phonebook");
+                    return false;
+                }
             }
         }
 
-        public void EditEntry(string number, PhoneBook newData)
+        public bool EditEntry(string number, PhoneBook newData)
         {
-            if (_entries.ContainsKey(number))
+            lock (_lock)
             {
-                _entries[number] = newData;
-            }
-            else
-            {
-                Console.WriteLine("The number does not exist in the phonebook");
+                if (_entries.ContainsKey(number))
+                {
+                    _entries[number] = newData;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
+
 
         public List<PhoneBook> IterateEntriesByLastName()
         {
-            var sortedEntries = _entries.Values.OrderBy(entry => entry.LastName).ToList();
-            return sortedEntries;
+            lock (_lock)
+            {
+                var sortedEntries = _entries.Values.OrderBy(entry => entry.LastName).ToList();
+                return sortedEntries;
+            }
+                
         }
 
         public void SerializeToProtoBuf(string fileName)
         {
-            using (var file = File.Create(fileName))
+            lock (_lock)
             {
-                ProtoBuf.Serializer.Serialize(file, _entries.Values);
+                using (var file = File.Create(fileName))
+                {
+                    ProtoBuf.Serializer.Serialize(file, _entries.Values);
+                }
+
             }
+                
         }
 
         public void DeserializeFromProtoBuf(string fileName)
         {
-            using (var file = File.OpenRead(fileName))
+            lock (_lock)
             {
-                var phoneBooks = ProtoBuf.Serializer.Deserialize<List<PhoneBook>>(file);
-                _entries = phoneBooks.ToDictionary(pb => pb.Number, pb => pb);
+                using (var file = File.OpenRead(fileName))
+                {
+                    var phoneBooks = ProtoBuf.Serializer.Deserialize<List<PhoneBook>>(file);
+                    _entries = phoneBooks.ToDictionary(pb => pb.Number, pb => pb);
+                }
             }
+
         }
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
-            foreach (var entry in _entries)
+            lock (_lock)
             {
-                sb.AppendLine(entry.Value.ToString());
+                var sb = new StringBuilder();
+                foreach (var entry in _entries)
+                {
+                    sb.AppendLine(entry.Value.ToString());
+                }
+                return sb.ToString();
+
             }
-            return sb.ToString();
+
         }
     }
 }

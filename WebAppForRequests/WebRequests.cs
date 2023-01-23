@@ -18,27 +18,40 @@ namespace WebAppForRequests
         public ActionResult<IEnumerable<PhoneBook>> GetAllEntries()
         {
             var phones = phoneBookManager.GetAllEntries();
-
+            if (phones == null || !phones.Any())
+            {
+                return NotFound("No phonebooks found");
+            }
             return Ok(phones);
         }
 
 
         [HttpGet]
-        [Route("api/phonesN")]
-        public ActionResult PhoneBook(string phone)
+        [Description("Returns the phone book of a specific user by phone number")]
+        [Route("api/phones/{phone}")]
+        public ActionResult<PhoneBook> GetPhoneBook(string phone)
         {
-            var das = phoneBookManager.GetEntryNumber(phone);
-
-            return Ok(phone);
+            var phonebook = phoneBookManager.GetEntryNumber(phone);
+            if (phonebook == null)
+            {
+                return NotFound($"No phonebook found with phone number {phone}");
+            }
+            return Ok(phonebook);
         }
 
         [HttpGet]
-        [Route("api/phones/LastName")]
+        [Description("Returns all phone books sorted by last name")]
+        [Route("api/phones/lastname")]
         public ActionResult<IEnumerable<PhoneBook>> GetEntriesByLastName()
         {
             var entries = phoneBookManager.IterateEntriesByLastName();
+            if (entries == null || !entries.Any())
+            {
+                return NotFound("No phonebooks found");
+            }
             return Ok(entries);
         }
+
 
 
         [HttpPost]
@@ -49,30 +62,62 @@ namespace WebAppForRequests
             {
                 return BadRequest(ModelState);
             }
-            phoneBookManager.AddEntry(phoneBook.Number, phoneBook);
-            return Ok(phoneBookManager.GetEntryNumber(phoneBook.Number));
+
+            var result = phoneBookManager.AddEntry(phoneBook);
+            if (result)
+            {
+                return Ok(phoneBookManager.GetEntryNumber(phoneBook.Number));
+            }
+            else
+            {
+                return BadRequest("Error adding entry to phonebook. Number already exists.");
+            }
         }
 
+
         [HttpDelete]
-        [Route("api/phones/delete")]
+        [Route("api/phones/delete/{number}")]
         public ActionResult DeleteEntry(string number)
         {
-            phoneBookManager.DeleteEntry(number);
-            if (!phoneBookManager._entries.ContainsKey(number))
+            try
             {
-                return Ok("Number Deleted Successfully");
+                if (string.IsNullOrWhiteSpace(number))
+                {
+                    return BadRequest("Invalid phone number provided");
+                }
+
+                bool isDeleted = phoneBookManager.DeletePhonebook(number);
+                if (isDeleted)
+                {
+                    return Ok("Number Deleted Successfully");
+                }
+                else
+                {
+                    return NotFound("Number not found in Phone Book");
+                }
             }
-            return BadRequest("Number not found in Phone Book");
+            catch (Exception ex)
+            {
+                //log the exception
+                return StatusCode(500, ex.Message);
+            }
         }
+
 
         [HttpPatch]
         [Route("api/phones/update/{number}")]
         public ActionResult UpdateEntry(string number, PhoneBook newData)
         {
-            phoneBookManager.EditEntry(number, newData);
-            return Ok(phoneBookManager.GetEntryNumber(number));
+            bool isEdited = phoneBookManager.EditEntry(number, newData);
+            if (isEdited)
+            {
+                return Ok(phoneBookManager.GetEntryNumber(number));
+            }
+            else
+            {
+                return BadRequest("Number not found in Phone Book");
+            }
         }
-
     }
 
 }
