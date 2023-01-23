@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
+using Google.Protobuf;
 using PhoneBooksLibrary.Entities;
 
 namespace PhoneBooksLibrary
 {
     public class PhoneBookManager
     {
+
         public Dictionary<string, PhoneBook> _entries;
-
-        string filePath = "X:\\phonebook.bin";
-
         public PhoneBookManager()
         {
             _entries = new Dictionary<string, PhoneBook>();
@@ -22,12 +20,12 @@ namespace PhoneBooksLibrary
 
         public List<PhoneBook> GetAllEntries()
         {
-            Load();
             return _entries.Values.ToList();
         }
 
         public PhoneBook GetEntryNumber(string phoneN)
         {
+
             return _entries[phoneN];
         }
         public void AddEntry(string number, PhoneBook phonebook)
@@ -35,7 +33,7 @@ namespace PhoneBooksLibrary
             if (!_entries.ContainsKey(number))
             {
                 _entries.Add(number, phonebook);
-                SaveToFile(phonebook);
+
             }
             else
             {
@@ -73,23 +71,20 @@ namespace PhoneBooksLibrary
             return sortedEntries;
         }
 
-        private void SaveToFile(PhoneBook phoneBook)
+        public void SerializeToProtoBuf(string fileName)
         {
-            using (var stream = File.OpenWrite(filePath))
+            using (var file = File.Create(fileName))
             {
-                var formatter = new BinaryFormatter();
-                formatter.Serialize(stream, phoneBook);
+                ProtoBuf.Serializer.Serialize(file, _entries.Values);
             }
         }
-        private void Load()
-        {
-            if (!File.Exists(filePath))
-                return;
 
-            using (var stream = File.OpenRead(filePath))
+        public void DeserializeFromProtoBuf(string fileName)
+        {
+            using (var file = File.OpenRead(fileName))
             {
-                var formatter = new BinaryFormatter();
-                _entries = (Dictionary<string, PhoneBook>)formatter.Deserialize(stream);
+                var phoneBooks = ProtoBuf.Serializer.Deserialize<List<PhoneBook>>(file);
+                _entries = phoneBooks.ToDictionary(pb => pb.Number, pb => pb);
             }
         }
 

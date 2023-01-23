@@ -10,7 +10,7 @@ namespace WebAppForRequests
     [Route("api/phones")]
     public class WebRequestsController : ControllerBase
     {
-        public static  PhoneBookManager  phoneBookManager = new PhoneBookManager();
+        public static PhoneBookManager phoneBookManager = new PhoneBookManager();
 
         [HttpGet]
         [Description("Returns all the phone books of all Users(meaning for each phone number)")]
@@ -25,15 +25,20 @@ namespace WebAppForRequests
 
         [HttpGet]
         [Route("api/phonesN")]
-        public ActionResult PhoneBook (string phone)
+        public ActionResult PhoneBook(string phone)
         {
             var das = phoneBookManager.GetEntryNumber(phone);
 
             return Ok(phone);
         }
 
-
-
+        [HttpGet]
+        [Route("api/phones/LastName")]
+        public ActionResult<IEnumerable<PhoneBook>> GetEntriesByLastName()
+        {
+            var entries = phoneBookManager.IterateEntriesByLastName();
+            return Ok(entries);
+        }
 
 
         [HttpPost]
@@ -48,20 +53,32 @@ namespace WebAppForRequests
             return Ok(phoneBookManager.GetEntryNumber(phoneBook.Number));
         }
 
+        [HttpDelete]
+        [Route("api/phones/delete")]
+        public ActionResult DeleteEntry(string number)
+        {
+            phoneBookManager.DeleteEntry(number);
+            if (!phoneBookManager._entries.ContainsKey(number))
+            {
+                return Ok("Number Deleted Successfully");
+            }
+            return BadRequest("Number not found in Phone Book");
+        }
 
-
-
-
-
-
+        [HttpPatch]
+        [Route("api/phones/update/{number}")]
+        public ActionResult UpdateEntry(string number, PhoneBook newData)
+        {
+            phoneBookManager.EditEntry(number, newData);
+            return Ok(phoneBookManager.GetEntryNumber(number));
+        }
 
     }
 
-    
 }
 
 
 
 
 
-    
+
