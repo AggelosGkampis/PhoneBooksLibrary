@@ -10,7 +10,7 @@ using ProtoBuf;
 namespace PhoneBooksLibrary.Entities
 {
     [ProtoContract]
-    public class PhoneBook
+    public class PhoneBookDTO
     {
         [ProtoMember(1)]
         public string FirstName { get; set; }
@@ -21,8 +21,12 @@ namespace PhoneBooksLibrary.Entities
         [ProtoMember(4)]
         public string Number { get; set; }
 
+        public PhoneBookDTO()
+        {
 
-        public PhoneBook(string firstName, string lastName, PhoneType type, string number)
+        }
+
+        public PhoneBookDTO(string firstName, string lastName, PhoneType type, string number)
         {
             FirstName = firstName;
             LastName = lastName;

@@ -15,14 +15,14 @@ namespace WebAppForRequests
         [HttpGet]
         [Description("Returns all the phone books of all Users(meaning for each phone number)")]
         [Route("get/all/phones")]
-        public ActionResult<IEnumerable<PhoneBook>> GetAllEntries()
+        public ActionResult<IEnumerable<PhoneBookDTO>> GetAllEntries()
         {
-           var phones = phoneBookManager.GetAllEntries();
-           if (phones == null || !phones.Any())
-           {
-               return NotFound("No phonebooks found");
-           }
-           return Ok(phones);
+            var phones = phoneBookManager.GetAllEntries();
+            if (phones == null || !phones.Any())
+            {
+                return NotFound("No phonebooks found");
+            }
+            return Ok(phones);
 
         }
 
@@ -30,7 +30,7 @@ namespace WebAppForRequests
         [HttpGet]
         [Description("Returns the phone book of a specific user by phone number")]
         [Route("get/phone/{phone}")]
-        public ActionResult<PhoneBook> GetPhoneBook(string phoneNumber)
+        public ActionResult<PhoneBookDTO> GetPhoneBook(string phoneNumber)
         {
             var phonebook = phoneBookManager.GetEntryByNumber(phoneNumber);
             if (phonebook == null)
@@ -44,7 +44,7 @@ namespace WebAppForRequests
         [HttpGet]
         [Description("Returns all phone books sorted by last name")]
         [Route("phones/by/users/lastname")]
-        public ActionResult<IEnumerable<PhoneBook>> GetEntriesByLastName()
+        public ActionResult<IEnumerable<PhoneBookDTO>> GetEntriesByLastName()
         {
             var entries = phoneBookManager.IterateEntriesByLastName();
             if (entries == null || !entries.Any())
@@ -58,7 +58,7 @@ namespace WebAppForRequests
 
         [HttpPost]
         [Route("add/phone")]
-        public ActionResult<PhoneBook> AddEntry(PhoneBook phoneBook)
+        public ActionResult<PhoneBookDTO> AddEntry(PhoneBookDTO phoneBook)
         {
             if (!ModelState.IsValid)
             {
@@ -102,7 +102,7 @@ namespace WebAppForRequests
 
         [HttpPatch]
         [Route("update/phone/{number}")]
-        public ActionResult UpdateEntry(string number, PhoneBook newData)
+        public ActionResult UpdateEntry(string number, PhoneBookDTO newData)
         {
             bool isEdited = phoneBookManager.EditEntry(number, newData);
             if (isEdited)

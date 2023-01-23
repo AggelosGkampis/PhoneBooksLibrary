@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.Serialization;
-using System.Text;
-using Google.Protobuf;
-using PhoneBooksLibrary.Entities;
+﻿using PhoneBooksLibrary.Entities;
 
 namespace PhoneBooksLibrary
 {
@@ -14,22 +6,22 @@ namespace PhoneBooksLibrary
     {
         private readonly object _lock = new object();
 
-        private Dictionary<string, PhoneBook> _entries;
+        private Dictionary<string, PhoneBookDTO> _entries;
 
         private static string _path = "AllStoredPhonebooks.bin";
 
 
-        public Dictionary<string, PhoneBook> Entries
+        public Dictionary<string, PhoneBookDTO> Entries
         {
             get { return _entries; }
             private set { _entries = value; }
         }
         public PhoneBookManager()
         {
-            _entries = new Dictionary<string, PhoneBook>();
+            _entries = new Dictionary<string, PhoneBookDTO>();
         }
 
-        public List<PhoneBook> GetAllEntries()
+        public List<PhoneBookDTO> GetAllEntries()
         {
             lock (_lock)
             {
@@ -37,38 +29,58 @@ namespace PhoneBooksLibrary
                 {
                     if (_entries == null || _entries.Count == 0)
                     {
-                        return new List<PhoneBook>();
+                        return new List<PhoneBookDTO>();
                     }
+                    DeserializeFromProtoBuf();
                     return _entries.Values.ToList();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     throw;
                 }
             }
         }
 
-        public PhoneBook GetEntryByNumber(string phoneNumber)
-        {
-            lock (_lock)
-            {              
-                return _entries[phoneNumber];
-            }
-        }
-        public bool AddEntry(PhoneBook phonebook)
+        public PhoneBookDTO GetEntryByNumber(string phoneNumber)  
         {
             lock (_lock)
             {
-                if (!_entries.ContainsKey(phonebook.Number))
+                try
                 {
-                    _entries.Add(phonebook.Number, phonebook);
-                    SerializeToProtoBuf();
-                    return true;
+                    DeserializeFromProtoBuf();
+                    return _entries[phoneNumber];
                 }
-                else
+                catch (Exception)
                 {
-                    return false;
+                    
+                    throw;
                 }
+                
+            }
+        }
+        public bool AddEntry(PhoneBookDTO phonebook)
+        {
+            lock (_lock)
+            {
+                try
+                {
+                    if (!_entries.ContainsKey(phonebook.Number))
+                    {
+                        _entries.Add(phonebook.Number, phonebook);
+                        SerializeToProtoBuf();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+                
             }
         }
 
@@ -77,43 +89,73 @@ namespace PhoneBooksLibrary
         {
             lock (_lock)
             {
-                if (_entries.ContainsKey(number))
+                try
                 {
-                    _entries.Remove(number);
-                    return true;
+                    if (_entries.ContainsKey(number))
+                    {
+                        _entries.Remove(number);
+                        SerializeToProtoBuf();
+                        return true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("The number does not exist in the phonebook");
+                        return false;
+                    }
                 }
-                else
+                catch (Exception)
                 {
-                    Console.WriteLine("The number does not exist in the phonebook");
-                    return false;
+
+                    throw;
                 }
+               
             }
         }
 
-        public bool EditEntry(string number, PhoneBook newData)
+        public bool EditEntry(string number, PhoneBookDTO newData)
         {
             lock (_lock)
             {
-                if (_entries.ContainsKey(number))
+                try
                 {
-                    _entries[number] = newData;
-                    SerializeToProtoBuf();
-                    return true;
+                    if (_entries.ContainsKey(number))
+                    {
+                        _entries[number] = newData;
+                        SerializeToProtoBuf();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
                 }
-                else
+                catch (Exception)
                 {
-                    return false;
+
+                    throw;
                 }
+               
             }
         }
 
 
-        public List<PhoneBook> IterateEntriesByLastName()
+        public List<PhoneBookDTO> IterateEntriesByLastName()
         {
             lock (_lock)
             {
-                var sortedEntries = _entries.Values.OrderBy(entry => entry.LastName).ToList();
-                return sortedEntries;
+                try
+                {
+                    var sortedEntries = _entries.Values.OrderBy(entry => entry.LastName).ToList();
+                    DeserializeFromProtoBuf();
+                    return sortedEntries;
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+               
             }
 
         }
@@ -131,32 +173,17 @@ namespace PhoneBooksLibrary
 
         }
 
-        public void DeserializeFromProtoBuf(string fileName)
+        public void DeserializeFromProtoBuf()
         {
             lock (_lock)
             {
-                using (var file = File.OpenRead(fileName))
+                using (var file = File.OpenRead(_path))
                 {
-                    var phoneBooks = ProtoBuf.Serializer.Deserialize<List<PhoneBook>>(file);
+                    var phoneBooks = ProtoBuf.Serializer.Deserialize<List<PhoneBookDTO>>(file);
                     _entries = phoneBooks.ToDictionary(pb => pb.Number, pb => pb);
                 }
             }
 
-        }
-
-        public override string ToString()
-        {
-            lock (_lock)
-            {
-                var sb = new StringBuilder();
-                foreach (var entry in _entries)
-                {
-                    sb.AppendLine(entry.Value.ToString());
-                }
-                return sb.ToString();
-
-            }
-
-        }
+        }      
     }
 }
