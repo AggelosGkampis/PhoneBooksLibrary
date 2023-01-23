@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.Serialization;
 using System.Text;
 using Google.Protobuf;
@@ -15,6 +16,9 @@ namespace PhoneBooksLibrary
 
         private Dictionary<string, PhoneBook> _entries;
 
+        private static string _path = "AllStoredPhonebooks.bin";
+
+
         public Dictionary<string, PhoneBook> Entries
         {
             get { return _entries; }
@@ -27,28 +31,28 @@ namespace PhoneBooksLibrary
 
         public List<PhoneBook> GetAllEntries()
         {
-            try
+            lock (_lock)
             {
-                if (_entries == null || _entries.Count == 0)
+                try
                 {
-                    return new List<PhoneBook>();
-                    //or return "No phonebook entries found.";
+                    if (_entries == null || _entries.Count == 0)
+                    {
+                        return new List<PhoneBook>();
+                    }
+                    return _entries.Values.ToList();
                 }
-                return _entries.Values.ToList();
-            }
-            catch (Exception ex)
-            {
-                //log the exception
-                return new List<PhoneBook>();
+                catch (Exception ex)
+                {
+                    throw;
+                }
             }
         }
 
-
-        public PhoneBook GetEntryNumber(string phoneN)
+        public PhoneBook GetEntryByNumber(string phoneNumber)
         {
             lock (_lock)
-            {
-                return _entries[phoneN];
+            {              
+                return _entries[phoneNumber];
             }
         }
         public bool AddEntry(PhoneBook phonebook)
@@ -58,6 +62,7 @@ namespace PhoneBooksLibrary
                 if (!_entries.ContainsKey(phonebook.Number))
                 {
                     _entries.Add(phonebook.Number, phonebook);
+                    SerializeToProtoBuf();
                     return true;
                 }
                 else
@@ -92,6 +97,7 @@ namespace PhoneBooksLibrary
                 if (_entries.ContainsKey(number))
                 {
                     _entries[number] = newData;
+                    SerializeToProtoBuf();
                     return true;
                 }
                 else
@@ -109,20 +115,20 @@ namespace PhoneBooksLibrary
                 var sortedEntries = _entries.Values.OrderBy(entry => entry.LastName).ToList();
                 return sortedEntries;
             }
-                
+
         }
 
-        public void SerializeToProtoBuf(string fileName)
+        public void SerializeToProtoBuf()
         {
             lock (_lock)
             {
-                using (var file = File.Create(fileName))
+                using (var file = File.Create(_path))
                 {
                     ProtoBuf.Serializer.Serialize(file, _entries.Values);
                 }
 
             }
-                
+
         }
 
         public void DeserializeFromProtoBuf(string fileName)

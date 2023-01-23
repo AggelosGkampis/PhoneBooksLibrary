@@ -5,17 +5,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PhoneBooksLibrary.Entities.Enums;
+using ProtoBuf;
 
 namespace PhoneBooksLibrary.Entities
 {
-    [Serializable]
+    [ProtoContract]
     public class PhoneBook
     {
+        [ProtoMember(1)]
         public string FirstName { get; set; }
+        [ProtoMember(2)]
         public string LastName { get; set; }
-
+        [ProtoMember(3)]
         public PhoneType Type { get; set; }
-
+        [ProtoMember(4)]
         public string Number { get; set; }
 
 
@@ -27,10 +30,6 @@ namespace PhoneBooksLibrary.Entities
             Number = number;
         }
 
-        public PhoneBook()
-        {
-
-        }
 
     }
 }
