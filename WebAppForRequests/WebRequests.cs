@@ -15,6 +15,7 @@ namespace WebAppForRequests
         [HttpGet]
         [Description("Returns all the phone books of all Users(meaning for each phone number)")]
         [Route("get/all/phones")]
+
         public ActionResult<IEnumerable<PhoneBookDTO>> GetAllEntries()
         {
             var phones = phoneBookManager.GetAllEntries();
