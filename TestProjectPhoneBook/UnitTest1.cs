@@ -16,7 +16,7 @@ namespace TestProjectPhoneBook
         {
             // When(given)
 
-            PhoneBookDTO phoneBookDTO = new PhoneBookDTO( "Aggelos", "Gkampis", PhoneType.Cellphone, "697865235");
+            PhoneBookDTO phoneBookDTO = new PhoneBookDTO("Aggelos", "Gkampis", PhoneType.Cellphone, "697865235");
             PhoneBookManager phoneBookManager = new PhoneBookManager();
 
             // Then(do)
@@ -30,7 +30,7 @@ namespace TestProjectPhoneBook
 
 
         [Test]
-        public void EditEntry ()
+        public void EditEntry()
         {
             // When(given)
 

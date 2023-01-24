@@ -82,22 +82,22 @@ namespace WebAppForRequests
         [Route("delete/phone/{number}")]
         public ActionResult DeleteEntry(string number)
         {
-           
-                if (string.IsNullOrWhiteSpace(number))
-                {
-                    return BadRequest("Invalid phone number provided");
-                }
 
-                bool isDeleted = phoneBookManager.DeletePhonebook(number);
-                if (isDeleted)
-                {
-                    return Ok("Number Deleted Successfully");
-                }
-                else
-                {
-                    return NotFound("Number not found in Phone Book");
-                }
-                   
+            if (string.IsNullOrWhiteSpace(number))
+            {
+                return BadRequest("Invalid phone number provided");
+            }
+
+            bool isDeleted = phoneBookManager.DeletePhonebook(number);
+            if (isDeleted)
+            {
+                return Ok("Number Deleted Successfully");
+            }
+            else
+            {
+                return NotFound("Number not found in Phone Book");
+            }
+
         }
 
 
