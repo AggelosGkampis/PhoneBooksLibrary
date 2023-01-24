@@ -12,7 +12,7 @@ namespace TestProjectPhoneBook
         }
 
         [Test]
-        public void addEntryTest()
+        public void AddEntryTest()
         {
             // When(given)
 
@@ -20,7 +20,7 @@ namespace TestProjectPhoneBook
             PhoneBookManager phoneBookManager = new PhoneBookManager();
 
             // Then(do)
-           ;
+            phoneBookManager.AddEntry(phoneBookDTO);
 
             //Assert
             Assert.IsTrue(phoneBookManager.GetEntryByNumber("697865235").FirstName == "Aggelos");

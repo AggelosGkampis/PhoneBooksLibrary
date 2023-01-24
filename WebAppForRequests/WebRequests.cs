@@ -104,16 +104,24 @@ namespace WebAppForRequests
         [Route("update/phone/{number}")]
         public ActionResult UpdateEntry(string number, PhoneBookDTO newData)
         {
+            if (string.IsNullOrWhiteSpace(number))
+            {
+                return BadRequest("Invalid phone number provided");
+            }
+
             bool isEdited = phoneBookManager.EditEntry(number, newData);
             if (isEdited)
             {
-                return Ok(phoneBookManager.GetEntryByNumber(number));
+                return Ok(phoneBookManager.GetEntryByNumber(newData.Number));
             }
             else
             {
                 return BadRequest("Number not found in Phone Book");
             }
         }
+
+
+
     }
 
 }

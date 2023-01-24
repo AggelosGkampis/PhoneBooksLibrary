@@ -4,7 +4,7 @@ namespace PhoneBooksLibrary
 {
     public class PhoneBookManager
     {
-        private readonly object _lock = new object();
+        private object _lock = new object();
 
         private Dictionary<string, PhoneBookDTO> _entries;
 
@@ -25,6 +25,7 @@ namespace PhoneBooksLibrary
         {
             lock (_lock)
             {
+
                 try
                 {
                     if (_entries == null || _entries.Count == 0)
@@ -41,7 +42,7 @@ namespace PhoneBooksLibrary
             }
         }
 
-        public PhoneBookDTO GetEntryByNumber(string phoneNumber)  
+        public PhoneBookDTO GetEntryByNumber(string phoneNumber)
         {
             lock (_lock)
             {
@@ -52,11 +53,11 @@ namespace PhoneBooksLibrary
                 }
                 catch (Exception)
                 {
-                    
+
                     throw;
                 }
-                
             }
+
         }
         public bool AddEntry(PhoneBookDTO phonebook)
         {
@@ -80,7 +81,6 @@ namespace PhoneBooksLibrary
 
                     throw;
                 }
-                
             }
         }
 
@@ -108,7 +108,6 @@ namespace PhoneBooksLibrary
 
                     throw;
                 }
-               
             }
         }
 
@@ -135,7 +134,6 @@ namespace PhoneBooksLibrary
 
                     throw;
                 }
-               
             }
         }
 
@@ -155,7 +153,7 @@ namespace PhoneBooksLibrary
 
                     throw;
                 }
-               
+
             }
 
         }
@@ -168,9 +166,7 @@ namespace PhoneBooksLibrary
                 {
                     ProtoBuf.Serializer.Serialize(file, _entries.Values);
                 }
-
             }
-
         }
 
         public void DeserializeFromProtoBuf()
@@ -182,8 +178,8 @@ namespace PhoneBooksLibrary
                     var phoneBooks = ProtoBuf.Serializer.Deserialize<List<PhoneBookDTO>>(file);
                     _entries = phoneBooks.ToDictionary(pb => pb.Number, pb => pb);
                 }
-            }
 
-        }      
+            }
+        }
     }
 }
